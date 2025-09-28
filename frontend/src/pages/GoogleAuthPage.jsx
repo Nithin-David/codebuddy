@@ -1,12 +1,15 @@
 
-import {useGoogleLogin} from '@react-oauth/google'
+import {useGoogleLogin} from '@react-oauth/google';
+import {googleAuth} from '../api/authApi.js'
 
 const GoogleAuthPage = () => {
 
     const googleResponse = async (authResult) => {
         try {
-            console.log("Google login success", authResult);
-            console.log(authResult)
+            if(authResult['code']){
+                const user = googleAuth(authResult['code']);
+                console.log(user);
+            }
         } catch (error) {
             console.log("error in google login", error);
         }

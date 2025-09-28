@@ -1,5 +1,7 @@
 import User from "../models/user.model.js";
 import jwt from 'jsonwebtoken';
+import {oauth2client} from '../utils/googleConfig.js';
+import axios from 'axios';
 
 const emailRegex = /^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$/;
 
@@ -82,7 +84,7 @@ export const login = async (req, res) => {
         console.log("error in login", error);
         res.status(500).json({ message: "Internal server error" });
     }
-}
+};
 
 export const logout = (req, res) => {
   try {
@@ -96,4 +98,50 @@ export const logout = (req, res) => {
     console.log("error in logout", error);
     res.status(500).json({ message: "Internal server error" });
   }
-}
+};
+
+
+//google Login 
+export const googleLogin = async (req, res) => {
+  try {
+    const {code} = req.query;
+
+    const googleRes = await oauth2client.getToken(code);
+    oauth2client.setCredentials(googleRes.tokens);
+
+    const userRes = await axios.get(`https://www.googleapis.com/oauth2/v1/userinfo?alt=json&access_token=${googleRes.tokens.access_token}`)
+
+    const {id,email, name, picture} = userRes.data;
+
+    let user = await User.findOne({email});
+
+    if(!user){
+      user = await User.create({
+        fullname: name,
+        email,
+        image: picture,
+        googleId: id
+      })
+    };
+
+     const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+       expiresIn: "7d",
+     });
+
+     res.cookie("codebuddy_token", token, {
+       httpOnly: true,
+       secure: process.env.NODE_ENV === "production",
+       sameSite: "strict",
+       maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+     });
+
+     const { password: _, ...userWithoutPassword } = user.toObject(); // Exclude password from the user object
+
+     res.status(201).json({ message: "Google Authentication Successful", userWithoutPassword });
+
+  } catch (error) {
+    console.log("error in google login", error);
+    res.status(500).json({ message: "Internal server error" });
+  }
+};
+
