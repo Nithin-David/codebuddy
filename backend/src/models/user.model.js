@@ -20,14 +20,27 @@ const userSchema = new mongoose.Schema(
       default: null,
     },
     googleId: { type: String },
+    githubId: { type: String },
+    Snippets: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "CodeSnippet",
+      },
+    ],
+    savedSnippets: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "CodeSnippet",
+      },
+    ],
   },
   { timestamps: true }
 );
 
 // Optional: Custom validation (at least password OR googleId must exist)
 userSchema.pre("validate", function (next) {
-  if (!this.password && !this.googleId) {
-    next(new Error("User must have either password or Google ID"));
+  if (!this.password && !this.googleId && !this.githubId) {
+    next(new Error("User must have either password or Google ID or GitHub ID"));
   } else {
     next();
   }

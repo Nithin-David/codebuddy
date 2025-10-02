@@ -1,6 +1,8 @@
 import { Navigate, Route, Routes } from "react-router-dom";
 import GoogleAuthPage from "./pages/GoogleAuthPage";
+import {GithubAuthPage} from "./pages/GithubAuthPage";
 import { GoogleOAuthProvider } from "@react-oauth/google";
+import HomePage from "./pages/HomePage";
 
 function App() {
   const GoogleAuthWrapper = () => {
@@ -15,6 +17,8 @@ function App() {
     <>
       <Routes>
         <Route path="/login" element={<GoogleAuthWrapper />} />
+        <Route path="/github" element={<GithubAuthPage />} />
+        <Route path="/home" element={<HomePage />} />
         <Route path="/" element={<Navigate to="/login" />} />
       </Routes>
     </>

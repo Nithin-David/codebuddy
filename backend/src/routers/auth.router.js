@@ -1,5 +1,6 @@
 import express from 'express';
-import { googleLogin, login, logout, signup } from '../controllers/auth.controller.js';
+import { githubLogin, googleLogin, login, logout, signup } from '../controllers/auth.controller.js';
+import { githubCongig } from '../utils/githubConfig.js';
 
 const router = express.Router();
 
@@ -8,5 +9,8 @@ router.post('/login', login);
 router.post('/logout', logout);
 
 router.get('/google-auth', googleLogin);
+
+router.get('/github', githubCongig);
+router.get('/github/callback', githubLogin);
 
 export default router;

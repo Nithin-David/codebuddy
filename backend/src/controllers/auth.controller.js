@@ -145,3 +145,65 @@ export const googleLogin = async (req, res) => {
   }
 };
 
+
+//github login
+export const githubLogin = async (req, res) => {
+   const { code } = req.query;
+
+   try {
+     // Exchange code for access token
+     const tokenRes = await axios.post(
+       "https://github.com/login/oauth/access_token",
+       {
+         client_id: process.env.GITHUB_CLIENT_ID,
+         client_secret: process.env.GITHUB_CLIENT_SECRET,
+         code,
+       },
+       { headers: { Accept: "application/json" } }
+     );
+
+     const access_token = tokenRes.data.access_token;
+
+     // Get user info from GitHub
+     const userRes = await axios.get("https://api.github.com/user", {
+       headers: { Authorization: `token ${access_token}` },
+     });
+
+     const emailRes = await axios.get("https://api.github.com/user/emails", {
+       headers: { Authorization: `token ${access_token}` },
+     });
+
+     const { id: githubId, name, avatar_url } = userRes.data;
+     const email = emailRes.data.find((e) => e.primary).email;
+
+     // Check if user exists
+     let user = await User.findOne({ email });
+     if (!user) {
+       user = await User.create({
+         fullname: name || "GitHub User",
+         email,
+         githubId,
+         image: avatar_url,
+       });
+     }
+
+   const token = jwt.sign({ id: user._id }, process.env.JWT_SECRET, {
+     expiresIn: "7d",
+   });
+
+   res.cookie("codebuddy_token", token, {
+     httpOnly: true,
+     secure: process.env.NODE_ENV === "production",
+     sameSite: "strict",
+     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+   });
+
+   const { password: _, ...userWithoutPassword } = user.toObject(); // Exclude password from the user object
+
+  res.redirect(process.env.GITHUB_FRONTEND_URL);
+
+   } catch (error) {
+     console.error(error);
+     res.status(500).json({ error: "GitHub login failed" });
+   }
+}
