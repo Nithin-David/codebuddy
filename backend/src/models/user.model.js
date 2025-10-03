@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema(
     },
     googleId: { type: String },
     githubId: { type: String },
-    Snippets: [
+    snippets: [
       {
         type: mongoose.Schema.Types.ObjectId,
         ref: "CodeSnippet",

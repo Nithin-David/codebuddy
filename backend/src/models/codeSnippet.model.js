@@ -22,7 +22,7 @@ const codeSnippetSchema = new mongoose.Schema({
         ref: "User",
         required: true,
     },
-    publicSnippet: {
+    isPublic: {
         type: Boolean,
         default: false,
     }

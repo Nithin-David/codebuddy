@@ -4,6 +4,7 @@ import cors from 'cors';
 import "dotenv/config"
 import connectDB from './db/db.js';
 import authRouter from './routers/auth.router.js';
+import codeSnippetRouter from "./routers/codeSnippet.router.js"
 
 
 const PORT = process.env.PORT || 8000;
@@ -16,6 +17,7 @@ app.use(cors());
 
 //Routes
 app.use('/api/auth', authRouter);
+app.use('/api/code', codeSnippetRouter);
 
 
 app.listen(PORT, () => {
