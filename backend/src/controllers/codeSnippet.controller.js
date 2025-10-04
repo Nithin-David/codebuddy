@@ -37,7 +37,7 @@ export const getCodeSnippets = async (req, res) => {
         const snippets = await User.findById(req.user._id).populate('snippets');
         if(!snippets) return res.status(404).json({message: "No snippets found"});
 
-        res.status(200).json({snippets});
+        res.status(200).json(snippets.snippets);
     } catch (error) {
         console.log("error in getCodeSnippets", error);
         res.status(500).json({ message: "Internal server error" });
@@ -73,10 +73,15 @@ export const deleteCodeSnippet = async (req, res) => {
 
         await CodeSnippet.findByIdAndDelete(snippetId);
 
-        const snippets = await User.findById(req.user._id).populate('snippets');
-        if(!snippets) return res.status(404).json({message: "No snippets found"});
+        const user = await User.findById(req.user._id).populate('snippets');
+        // if(user.snippets.length == 0) return res.status(404).json({message: "No snippets found"});
 
-        res.status(200).json({message: "Snippet deleted successfully", snippets});
+        res
+          .status(200)
+          .json({
+            message: "Snippet deleted successfully",
+            snippets: user.snippets,
+          });
        
     } catch (error) {
         console.log("error in deleteCodeSnippet", error);
@@ -110,6 +115,21 @@ export const toggleSavedSnippet = async (req, res) => {
     } catch (error) {
        console.log("error in toggleSavedSnippet", error);
        res.status(500).json({ message: "Internal server error" }); 
+    }
+};
+
+// get all the saved snippets of a user
+export const getSavedSnippets = async (req, res) => {
+    try {
+        const userId = req.user._id;
+
+        const user = await User.findById(userId).populate('savedSnippets');
+        if(!user) return res.status(404).json({message: "User not found"});
+
+        res.status(200).json({savedSnippets: user.savedSnippets});
+    } catch (error) {
+        console.log("error in getSavedSnippets", error);
+        res.status(500).json({ message: "Internal server error" });
     }
 };
 
